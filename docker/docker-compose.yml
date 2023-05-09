@@ -1,0 +1,13 @@
+version: '3'
+services:
+  ms-docsify-doc-service:
+    image: nginx
+    ports:
+      - "88:80"
+    restart: always
+    volumes:
+      - "./../../ms-docsify-doc:/usr/share/nginx/html"
+      # linux 指定容器时间为宿主机时间
+#      - /etc/localtime:/etc/localtime
+    container_name: ms-docsify-doc
+
