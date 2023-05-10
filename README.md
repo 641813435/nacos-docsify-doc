@@ -73,25 +73,34 @@ spring:
 ```
 
 ##  注册中心原理
-> 以Nacos为例，其他注册中心组件原理相同。可以看做CS结构，[服务注册](#服务注册)、[健康检查](#健康检查)都是客户端使用HttpClient请求服务端接口，进行服务的维护。
-> 而[服务发现](#服务发现)是在客户端启动守护线程，打开socket长连接，由服务端主动推送服务示例报文给客户端
+> 以Nacos为例，其他注册中心组件原理相同。可以看做CS结构，[服务注册](#服务注册)、[健康检查](#健康检查)、[服务发现](#服务发现)都是客户端使用HttpClient请求服务端接口，进行服务的维护。
+> 将微服务配置别名并携带参数注册到nacos服务上，调用方只需使用别名即可请求到真实的服务接口。
 
 ###  服务注册
+
+![markdown](./img/nacos服务注册.jpg "markdown")
+
 1. 首先Nacos中实现服务注册接口，并在`META-INF/spring.factories`中提供`SPI`机制接口配置类`NacosDiscoveryAutoConfiguration`
 2. SpringBoot启动时，Spring会注入Nacos服务注册实现类，调用`AbstractAutoServiceRegistration.register() -> NacosAutoServiceRegistration.register() -> NacosServiceRegistry.register()`
 3. `NacosServiceRegistry.register() -> NacosNamingService.registerInstance()`启动健康检查定时任务，并注册服务
 4. `NacosNamingService.registerInstance() -> NamingProxy.registerService() -> NamingProxy.reqAPI()`发送服务注册请求
 
 ### 健康检查
+
+![markdown](./img/nacos健康检查.jpg "markdown")
+
 1. 服务注册成功后会启动心跳检测定时任务，默认每5秒一次。`NacosNamingService.registerInstance() -> BeatReactor.addBeatInfo()`
-2. 心跳任务实现代码`NamingProxy.sendBeat()`,最终依然是使用`NamingProxy.reqAPI()`发送服务注册请求
+2. 心跳检测实现：创建线程 -> `NamingProxy.sendBeat()`,最终依然是使用`NamingProxy.reqAPI()`发送心跳请求，根据服务响应间隔时间轮训这个步骤
 
 ### 服务发现
+
+![markdown](./img/nacos服务发现.jpg "markdown")
+
 1. 客户A通过`FeignClient`指定服务名称调用服务B，因为`FeignClient`中内置了`netflix`的`ribbon`做客户端负载均衡,所以会通过`ribbon`负载均衡策略进行服务发现
 2. 以`Nacos`内置的负载均衡策略`NacosRule.class`为例,首先获取注入`NacosDiscoveryProperties`，该对象可以获取到查询服务实例的对象`NamingService`
 3. `NamingService.selectInstances(name, true) -> NacosNamingService.selectInstances()`查询指定服务名称的示例列表
 4. `NacosNamingService.selectInstances() -> HostReactor.getServiceInfo()` 去查询内存中存储的服务实例。
-如果服务实例不存在则休眠5秒，等待守护线程执行定时器接收服务端推送的报文并写入服务实例`PushReceiver.run() -> hostReactor.processServiceJSON() `
+如果服务实例不存在则调用`hostReactor.updateServiceNow() `实时查询服务实例并缓存。首次调用服务会启动定时任务`hostReactor.scheduleUpdateIfAbsent()`，每秒查询一次服务状态并更新缓存
 5. `NamingService.selectInstances(name, true)`拿到服务实例后，客户端侧可以根据规则自定义负载均衡策略
 
 ##  自定义服务发现策略
