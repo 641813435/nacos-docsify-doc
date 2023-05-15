@@ -10,16 +10,22 @@
 
 ##  概述
 #### [Nacos](https://github.com/alibaba/nacos) 是阿里巴巴的开源项目，包含注册中心与配置中心，于2018 年 7 月正式发布，github star 26.3k。
-#### 2018 年 10 月 [spring-cloud-alibaba](https://github.com/alibaba/spring-cloud-alibaba) 分布式解决方案全家桶通过Spring孵化，正式开源，Nacos为其中一个组件，github star 25.5k。
+#### 2018 年 10 月 [spring-cloud-alibaba](https://github.com/alibaba/spring-cloud-alibaba) 分布式解决方案全家桶通过Spring孵化，正式开源，github star 25.5k。Nacos为其中一个组件，它还包括限流降级Sentinel、分布式事务Seata等组件。
 
 #### 主流注册中心对比:
 
 |       | Nacos | Eureka | Zookeeper | Consul |
 |:------|:------|:-------|:----------|:-------|
-| 一致性协议 | CP或AP | AP     | CP        | CP     | 
 | 版本迭代  | √     | ×      | √         | √      |
+| 雪崩保护 | 支持 | 支持     | 不支持       | 不支持    |
+| SpringCloud集成 | 支持 | 支持     | 不支持       | 支持     | 
+| Dubbo集成 | 支持 | 不支持    | 支持        | 不支持    | 
+| K8s集成 | 支持 | 不支持    | 不支持       | 支持     | 
+| CAP定理 | AP或CP | AP     | CP        | CP     |
 
-?>  一致性协议： 一致性（C），可用性（A），分区容错性（P）
+
+
+?>  CAP定理： 一致性（C），可用性（A），分区容错性（P）
 
 ##  基本使用
 #### Nacos服务端安装
@@ -75,7 +81,7 @@ spring:
 ##  注册中心原理
 ![markdown](./img/nacos架构图.jpg "markdown")
 
-> 以Nacos为例，其他注册中心组件原理相同。可以看做CS结构，[服务注册](#服务注册)、[健康检查](#健康检查)、[服务发现](#服务发现)都是客户端使用HttpClient请求服务端接口，进行服务的维护。
+> 以Nacos为例，其他注册中心组件原理相同。注册中心可以看做CS结构，[服务注册](#服务注册)、[健康检查](#健康检查)、[服务发现](#服务发现)这些核心特性本质就是客户端使用HttpClient请求服务端接口，进行服务的维护。
 > 服务提供者将服务注册到nacos上，服务消费者使用别名调用open api获取服务的实例列表
 
 ###  服务注册
