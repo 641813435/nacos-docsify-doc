@@ -9,7 +9,7 @@
 
 
 ##  概述
-#### [Nacos](https://github.com/alibaba/nacos) 是阿里巴巴的开源项目，包含注册中心与配置中心，于2018 年 7 月正式发布，github star 26.3k。
+#### [Nacos](https://github.com/alibaba/nacos) 是阿里巴巴的开源产品，包含注册中心与配置中心，于2018 年 7 月正式发布，github star 26.3k。
 #### 2018 年 10 月 [spring-cloud-alibaba](https://github.com/alibaba/spring-cloud-alibaba) 分布式解决方案全家桶通过Spring孵化，正式开源，github star 25.5k。Nacos为其中一个组件，它还包括限流降级Sentinel、分布式事务Seata等组件。
 
 #### 主流注册中心对比:
